@@ -1,23 +1,26 @@
-// The character: a chunky, pixel-block figure in Claude's terracotta, with a
-// wide block head and two dark eyes, in the spirit of Clawd (Claude Code's
-// own character; ours is an unofficial fan take, drawn from scratch). One
-// figure, posed by its joints, so a pose can ease into the next; and a few
-// close-ups (head, hand, chest) for the moves where the whole body would be
-// too small to see what is going on.
+// The character: a chunky, pixel-block figure styled in Sit Spot Club brand tokens
+// (Forest Green, Warm Gold, Slate, and Off-White), posed by joints for calm nature
+// and quiet sitting poses.
 
 import { block, dot, line, mix, rect } from './pixels'
 import type { Canvas, P } from './pixels'
 
-export const BODY = 0xd97757
-/** The far arm and leg: the same orange in shade, so the near limbs read in front. */
-export const SHADE = mix(BODY, 0x000000, 0.32)
-/** Creases and outlines on the body: chin, shoulder blades, knuckles. */
+// Sit Spot Club brand tokens
+export const FOREST_GREEN = 0x2d5016 // #2D5016
+export const WARM_GOLD = 0xc8a96e    // #C8A96E
+export const SLATE = 0x475569        // Slate
+export const OFF_WHITE = 0xf5f0e8    // #F5F0E8
+
+export const BODY = FOREST_GREEN
+/** The far arm and leg: the same forest green in shade, so the near limbs read in front. */
+export const SHADE = mix(BODY, 0x000000, 0.35)
+/** Creases and outlines on the body. */
 export const DEEP = mix(BODY, 0x000000, 0.5)
-export const LIGHT = mix(BODY, 0xffffff, 0.25)
-/** The near arm: a touch lighter, so it reads in front of the body. */
-export const ARM = mix(BODY, 0xffffff, 0.2)
-export const EYE = 0x1a1410
-export const GLINT = 0xf4efe8
+export const LIGHT = mix(BODY, WARM_GOLD, 0.3)
+/** The near arm: warm gold tint so it reads in front of the body. */
+export const ARM = mix(BODY, WARM_GOLD, 0.25)
+export const EYE = SLATE
+export const GLINT = OFF_WHITE
 
 /** A side view, facing right: the joints, in pixels. `neck` is the top of the torso. */
 export type Body = {
@@ -35,7 +38,7 @@ export type Body = {
 }
 
 export type Look = {
-  /** Eyes shut (a blink). */
+  /** Eyes shut (a blink or calm meditation). */
   blink?: boolean
   /** Toes of the near (or far) foot pointing up: a heel on the floor, toes lifted. */
   toesUp?: boolean
@@ -79,7 +82,7 @@ export function figure(c: Canvas, b: Body, look: Look = {}) {
   arm(c, shoulder, b.elbow, b.hand, ARM)
 }
 
-/** Standing tall at x, side on: the pose most moves start from. */
+/** Standing tall at x, side on: peaceful upright posture. */
 export function standing(x: number): Body {
   return {
     hip: [x, 12],
@@ -110,6 +113,40 @@ export function seated(x: number): Body {
     hand: [x + 4, 12],
     elbow2: [x + 0.5, 11],
     hand2: [x + 3, 12],
+  }
+}
+
+/** Quiet mindful sitting pose: upright spine, hands resting peacefully in lap. */
+export function sittingCalm(x: number): Body {
+  return {
+    hip: [x, 12.5],
+    neck: [x, 8],
+    head: [x + 0.5, 3.5],
+    knee: [x + 4.5, 13.5],
+    foot: [x + 4, 17],
+    knee2: [x + 3.5, 13.5],
+    foot2: [x + 3, 17],
+    elbow: [x + 1.5, 11],
+    hand: [x + 3.5, 13],
+    elbow2: [x + 0.5, 11],
+    hand2: [x + 2.5, 13],
+  }
+}
+
+/** Seated desk grounding pose: hands extended forward resting on real wood. */
+export function sittingGround(x: number): Body {
+  return {
+    hip: [x, 12],
+    neck: [x + 1, 8],
+    head: [x + 1.5, 3.8],
+    knee: [x + 5, 12.5],
+    foot: [x + 5, 17],
+    knee2: [x + 4, 12.5],
+    foot2: [x + 4, 17],
+    elbow: [x + 2.5, 10.5],
+    hand: [x + 6, 11],
+    elbow2: [x + 1.5, 10.5],
+    hand2: [x + 5, 11],
   }
 }
 

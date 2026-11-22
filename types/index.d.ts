@@ -1,20 +1,10 @@
 export type SceneId =
-  | 'stand'
-  | 'water'
-  | 'walk'
   | 'eyes'
+  | 'sound'
+  | 'wood'
   | 'breathe'
-  | 'neck'
-  | 'shoulders'
-  | 'thoracic'
-  | 'twist'
-  | 'wrists'
-  | 'squat'
-  | 'lunge'
-  | 'glutes'
-  | 'hamstring'
-  | 'calf'
-  | 'hipflexor'
+  | 'outside'
+  | 'weather'
 
 /**
  * One break: what to do (`how`), what it does for the body (`does`) and what
@@ -26,6 +16,6 @@ export type Activity = { scene?: SceneId; title: string; how: string; does: stri
 
 declare module 'claude-code' {
   interface PluginState {
-    '30yr-uptime': { current: Activity | null }
+    'sit-spot-break': { current: Activity | null }
   }
 }

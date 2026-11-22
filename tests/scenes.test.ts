@@ -3,22 +3,27 @@ import { expect, test } from 'claude-code/testing'
 import { ACTIVITIES } from '../hooks/activities'
 import {
   BODY,
-  BOX_MS,
+  BREATHE_ROUNDS,
   DEFAULT,
-  hasScene,
-  holdAt,
-  LEG_HOLD_MS,
-  TWIST_MS,
-  WRIST_MS,
   drawScene,
   encode,
   eyesLeft,
   EYES_MS,
+  hasScene,
   MAX_WIDTH,
+  OUTSIDE_MS,
+  outsideLeft,
   ROWS,
   SCENE_IDS,
   sceneWidth,
+  soundLeft,
+  SOUND_MS,
   toLines,
+  WAVE_MS,
+  weatherLeft,
+  WEATHER_MS,
+  woodLeft,
+  WOOD_MS,
 } from '../hooks/scenes'
 
 const WIDTHS = [50, 80, MAX_WIDTH]
@@ -106,31 +111,48 @@ test('the eyes break counts 20 seconds down to 0, then says done', () => {
   expect(text('eyes', EYES_MS)).not.toContain('0s')
 })
 
-test('squats count 1 to 10 and start over', () => {
-  expect(text('squat', 0)).toContain('squat 1/10')
-  expect(text('squat', 2_000 * 9 + 10)).toContain('squat 10/10')
-  expect(text('squat', 2_000 * 10 + 10)).toContain('squat 1/10')
+test('sensory gating counts 15 seconds down to 0, then says done', () => {
+  expect(soundLeft(0)).toBe(15)
+  expect(soundLeft(14_001)).toBe(1)
+  expect(soundLeft(SOUND_MS)).toBe(0)
+  expect(text('sound', 0)).toContain('15s')
+  expect(text('sound', 0)).toContain('furthest sound')
+  expect(text('sound', SOUND_MS)).toContain('done!')
 })
 
-test('lunges alternate legs, 8 on each', () => {
-  expect(text('lunge', 0)).toContain('left  1/8')
-  expect(text('lunge', 2_400)).toContain('right 1/8')
-  expect(text('lunge', 2_400 * 2)).toContain('left  2/8')
-  expect(text('lunge', 2_400 * 15)).toContain('right 8/8')
+test('touching wood grounds into real wood', () => {
+  expect(woodLeft(0)).toBe(15)
+  expect(woodLeft(WOOD_MS)).toBe(0)
+  expect(text('wood', 0)).toContain('touching wood')
+  expect(text('wood', WOOD_MS)).toContain('grounded!')
 })
 
-test('the glass empties sip by sip', () => {
-  expect(text('water', 0)).toContain('0/3 sips')
-  expect(text('water', 3_000)).toContain('1/3 sips')
-  expect(text('water', 9_000)).toContain('3/3 sips')
+test('ocean wave breath: in, hold, out, 4 seconds each, three rounds, then done', () => {
+  expect(text('breathe', 0)).toContain('inhale wave 4')
+  expect(text('breathe', 3_500)).toContain('inhale wave 1')
+  expect(text('breathe', WAVE_MS)).toContain('hold crest 4')
+  expect(text('breathe', WAVE_MS * 2)).toContain('exhale wave 4')
+  expect(text('breathe', 0)).toContain('round 1/3')
+  expect(text('breathe', WAVE_MS * 3)).toContain('round 2/3')
+  expect(text('breathe', WAVE_MS * 6)).toContain('round 3/3')
+  expect(text('breathe', WAVE_MS * 9)).toContain('done!')
 })
 
-test('the walker walks on and counts steps', () => {
-  // it walks in place while the ground goes by under it, counting steps
-  const ground = (t: number) => toLines(drawScene('walk', t, 80))[ROWS - 1]
-  expect(ground(0)).not.toBe(ground(700))
-  expect(text('walk', 0)).toContain('0 steps')
-  expect(text('walk', 4_500)).toContain('10 steps')
+test('step outside: 60-second micro-pause countdown', () => {
+  expect(outsideLeft(0)).toBe(60)
+  expect(outsideLeft(59_001)).toBe(1)
+  expect(outsideLeft(OUTSIDE_MS)).toBe(0)
+  expect(text('outside', 0)).toContain('60s')
+  expect(text('outside', 0)).toContain('step outside')
+  expect(text('outside', OUTSIDE_MS)).toContain('done!')
+})
+
+test('weather / light check: observes daylight, wind and sky', () => {
+  expect(weatherLeft(0)).toBe(20)
+  expect(weatherLeft(WEATHER_MS)).toBe(0)
+  expect(text('weather', 0)).toContain('20s')
+  expect(text('weather', 0)).toContain('light & wind')
+  expect(text('weather', WEATHER_MS)).toContain('done!')
 })
 
 test('too narrow for a scene: none; wide: capped', () => {
@@ -143,15 +165,10 @@ test('too narrow for a scene: none; wide: capped', () => {
 })
 
 test('encode packs width x ROWS cells of [codePoint, fg, bg]', () => {
-  const f = drawScene('squat', 0, 60)
+  const f = drawScene('wood', 0, 60)
   const bytes = Uint8Array.from(atob(encode(f)), c => c.charCodeAt(0))
   const cells = new Uint32Array(bytes.buffer)
   expect(cells.length).toBe(60 * ROWS * 3)
-  const row = 3, x = toLines(f)[row]!.indexOf('s')
-  const i = (row * 60 + x) * 3
-  expect(cells[i]).toBe('s'.codePointAt(0))
-  expect(cells[i + 2]).toBe(DEFAULT)
-  // a pixel cell: its character, the top colour and the bottom one
   const lines = toLines(f)
   const r = lines.findIndex(l => l.includes('\u2580') || l.includes('\u2588'))
   const px = lines[r]!.search(/[\u2580\u2588]/)
@@ -166,61 +183,4 @@ test('hasScene: only the scenes this version draws; an unknown one draws an empt
   for (const bad of ['stretch', '', undefined, null, 3]) expect(hasScene(bad)).toBe(false)
   const f = drawScene('stretch' as never, 0, 60)
   expect(toLines(f).slice(0, ROWS - 1).every(l => l.trim() === '')).toBe(true)
-})
-
-test('holdAt counts each hold down to 1, one after another, then null', () => {
-  expect(holdAt(0, 20_000, 2)).toEqual({ i: 0, left: 20 })
-  expect(holdAt(19_999, 20_000, 2)).toEqual({ i: 0, left: 1 })
-  expect(holdAt(20_000, 20_000, 2)).toEqual({ i: 1, left: 20 })
-  expect(holdAt(39_500, 20_000, 2)).toEqual({ i: 1, left: 1 })
-  expect(holdAt(40_000, 20_000, 2)).toBe(null)
-})
-
-test('box breathing: in, hold, out, hold, 4 seconds each, three rounds, then done', () => {
-  expect(text('breathe', 0)).toContain('breathe in 4')
-  expect(text('breathe', 3_500)).toContain('breathe in 1')
-  expect(text('breathe', BOX_MS)).toContain('hold 4')
-  expect(text('breathe', BOX_MS * 2)).toContain('breathe out 4')
-  expect(text('breathe', BOX_MS * 3)).toContain('hold 4')
-  expect(text('breathe', 0)).toContain('round 1/3')
-  expect(text('breathe', BOX_MS * 4)).toContain('round 2/3')
-  expect(text('breathe', BOX_MS * 11 + 10)).toContain('round 3/3')
-  expect(text('breathe', BOX_MS * 12)).toContain('done!')
-})
-
-test('rep counters: chin tucks and shoulder squeezes to 10, chair extensions to 5', () => {
-  expect(text('neck', 0)).toContain('tuck 1/10')
-  expect(text('neck', 3_000 * 9 + 10)).toContain('tuck 10/10')
-  expect(text('neck', 1_500)).toContain('hold 2')
-  expect(text('shoulders', 0)).toContain('squeeze 1/10')
-  expect(text('shoulders', 4_000 * 9 + 1_500)).toContain('squeeze 10/10')
-  expect(text('shoulders', 1_500)).toContain('hold 3')
-  expect(text('thoracic', 0)).toContain('sit tall 1/5')
-  expect(text('thoracic', 4_000 * 4 + 2_000)).toContain('arch back 5/5')
-})
-
-test('glute kickbacks: 10 on the left, then 10 on the right', () => {
-  expect(text('glutes', 0)).toContain('kick left  1/10')
-  expect(text('glutes', 2_000 * 9)).toContain('kick left  10/10')
-  expect(text('glutes', 2_000 * 10)).toContain('kick right 1/10')
-})
-
-test('two-sided holds show both sides with a countdown, then done', () => {
-  expect(text('twist', 0)).toContain('twist left  15s')
-  expect(text('twist', TWIST_MS)).toContain('twist right 15s')
-  expect(text('twist', TWIST_MS * 2)).toContain('done!')
-  expect(text('wrists', 0)).toContain('fingers up 10s')
-  expect(text('wrists', 0)).toContain('right hand')
-  expect(text('wrists', WRIST_MS)).toContain('fingers down 10s')
-  expect(text('wrists', WRIST_MS)).toContain('right hand')
-  expect(text('wrists', WRIST_MS * 2)).toContain('fingers up 10s')
-  expect(text('wrists', WRIST_MS * 2)).toContain('left hand')
-  expect(text('wrists', WRIST_MS * 3 + 9_500)).toContain('fingers down 1s')
-  expect(text('wrists', WRIST_MS * 4)).toContain('done!')
-  for (const [id, label] of [['hamstring', 'leg'], ['calf', 'heel down'], ['hipflexor', 'leg back']] as const) {
-    expect(text(id, 0)).toContain(`left  ${label} 20s`)
-    expect(text(id, LEG_HOLD_MS - 500)).toContain(`left  ${label} 1s`)
-    expect(text(id, LEG_HOLD_MS)).toContain(`right ${label} 20s`)
-    expect(text(id, LEG_HOLD_MS * 2)).toContain('done!')
-  }
 })

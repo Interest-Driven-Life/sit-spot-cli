@@ -20,9 +20,9 @@ test('titles are unique, and every text is plain English ASCII', () => {
   }
 })
 
-test('the moves cover the neck, shoulders, upper back, spine, glutes, legs, hips, breathing and wrists', () => {
+test('the practices cover eyes, sound, wood, breathe, outside and weather', () => {
   const scenes = new Set(ACTIVITIES.map(a => a.scene))
-  for (const s of ['neck', 'shoulders', 'thoracic', 'twist', 'glutes', 'hamstring', 'calf', 'hipflexor', 'breathe', 'wrists'] as const) {
+  for (const s of ['eyes', 'sound', 'wood', 'breathe', 'outside', 'weather'] as const) {
     expect(scenes.has(s)).toBe(true)
   }
 })

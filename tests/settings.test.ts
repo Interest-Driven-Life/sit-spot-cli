@@ -69,9 +69,9 @@ test('readSettings converts to milliseconds', () => {
 
 test('every move is on unless its option is turned off', () => {
   expect([...readSettings({}).enabled]).toEqual([...MOVES])
-  const enabled = readSettings({ squat: false, lunge: 'off', walk: 'FALSE', eyes: true, water: 'yes' }).enabled
-  expect([...enabled]).toEqual(MOVES.filter(m => !['squat', 'lunge', 'walk'].includes(m)))
-  expect(enabled.has('water')).toBe(true)
+  const enabled = readSettings({ wood: false, sound: 'off', outside: 'FALSE', eyes: true, breathe: 'yes' }).enabled
+  expect([...enabled]).toEqual(MOVES.filter(m => !['wood', 'sound', 'outside'].includes(m)))
+  expect(enabled.has('breathe')).toBe(true)
   expect(enabled.has('eyes')).toBe(true)
 })
 
@@ -96,18 +96,18 @@ test('parseSetting: what the readers would turn into the default is refused', ()
 })
 
 test('parseSetting: a move takes on or off, in the words readEnabled knows', () => {
-  for (const on of ['on', 'TRUE', 'yes', '1']) expect(parseSetting('squat', on)).toEqual({ value: true })
-  for (const off of ['off', 'False', 'no', '0']) expect(parseSetting('squat', off)).toEqual({ value: false })
-  expect('error' in parseSetting('squat', 'banana')).toBe(true)
+  for (const on of ['on', 'TRUE', 'yes', '1']) expect(parseSetting('wood', on)).toEqual({ value: true })
+  for (const off of ['off', 'False', 'no', '0']) expect(parseSetting('wood', off)).toEqual({ value: false })
+  expect('error' in parseSetting('wood', 'banana')).toBe(true)
 })
 
 test('findKey: case-insensitive, unknown keys are undefined', () => {
   expect(findKey('WAITSECONDS')).toBe('waitSeconds')
-  expect(findKey('hipFlexor')).toBe('hipflexor')
+  expect(findKey('sound')).toBe('sound')
   expect(findKey('pushups')).toBe(undefined)
 })
 
 test('toRaw: only a plain object is read as settings', () => {
   for (const bad of [undefined, null, 'x', 3, ['a']]) expect(toRaw(bad)).toEqual({})
-  expect(toRaw({ squat: false })).toEqual({ squat: false })
+  expect(toRaw({ wood: false })).toEqual({ wood: false })
 })

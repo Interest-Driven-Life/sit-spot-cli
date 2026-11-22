@@ -1,14 +1,14 @@
 {
-  "name": "30yr-uptime",
+  "name": "sit-spot-cli",
   "owner": {
-    "name": "mamrez"
+    "name": "Interest-Driven-Life"
   },
-  "description": "30yr-uptime: movement breaks for the time you spend waiting on Claude.",
+  "description": "Sit Spot Break: mindful nature and sensory grounding breaks for the time you spend waiting on Claude.",
   "plugins": [
     {
-      "name": "30yr-uptime",
+      "name": "sit-spot-break",
       "source": "./",
-      "description": "While Claude works, reminds you to stand up, drink water, stretch your neck, back, hips and legs, breathe, and do squats or lunges."
+      "description": "Mindful nature and sensory grounding breaks for Sit Spot Club while waiting on Claude."
     }
   ]
 }

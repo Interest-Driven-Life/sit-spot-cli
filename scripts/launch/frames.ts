@@ -86,12 +86,12 @@ const STEPS2: Array<[number, Row[]]> = [
   [18.2, tool('Bash', 'npm test', '84 passed, 0 failed')],
   [19.4, [txt(['● ', FG], ['Done. The auth module now reads and writes sessions through ', FG], ['SessionStore', BLUE], ['.', FG]), txt(['  4 files changed, tests pass.', FG]), txt()]],
 ]
-const BREAK1: [number, number] = [9.0, 16.4] // chin tucks while working
+const BREAK1: [number, number] = [9.0, 16.4] // eye rest while working
 const PRESS1 = 15.6
 const CMD_START = 20.6, CMD_RUN = 22.0
-const BREAK2: [number, number] = [22.0, 29.0] // /break -> squats (idle)
+const BREAK2: [number, number] = [22.0, 29.0] // /sitspot -> touching wood (idle)
 const PRESS2 = 28.3
-const MONTAGE: Array<[SceneId, number, number]> = [['wrists', 8500, 2.2], ['breathe', 1000, 2.2], ['hamstring', 18500, 2.2], ['shoulders', 0, 2.2], ['eyes', 17500, 2.2]]
+const MONTAGE: Array<[SceneId, number, number]> = [['sound', 0, 2.2], ['breathe', 1000, 2.2], ['outside', 0, 2.2], ['weather', 0, 2.2], ['eyes', 17500, 2.2]]
 const END = 29.0 + MONTAGE.reduce((a, m) => a + m[2], 0)
 
 function state(t: number): State {
@@ -107,17 +107,17 @@ function state(t: number): State {
   const clock = (x: number) => Math.floor(x < 9 ? (x - 2.6) * 2.2 : x < 16.4 ? 15 + (x - 9) * 1.2 : 24 + (x - 16.4) * 1.5)
   if (t < 19.4) {
     s.working = { word: t < 9 ? 'Pondering' : t < 16.4 ? 'Refactoring' : 'Testing', secs: Math.max(0, clock(t)) }
-    s.cap = t < 9 ? '…and sit there. Like you will for the next 30 years.' : t < 12.5 ? 'Every 45 min, once a turn passes 15s, a break shows up' : t < 16.4 ? 'Do the move, press Done. Claude never stopped working.' : 'Claude keeps going.'
-    if (t >= BREAK1[0] && t < BREAK1[1]) s.scene = { id: 'neck', t: (t - BREAK1[0]) * 1000, press: t >= PRESS1 ? 'done' : null }
+    s.cap = t < 9 ? '…and wait. Sit Spot brings mindful sensory grounding to Claude pauses.' : t < 12.5 ? 'Every 45 min, once a turn passes 15s, a break shows up' : t < 16.4 ? 'Take the micro-break, press Done. Claude never stopped working.' : 'Claude keeps going.'
+    if (t >= BREAK1[0] && t < BREAK1[1]) s.scene = { id: 'eyes', t: (t - BREAK1[0]) * 1000, press: t >= PRESS1 ? 'done' : null }
     for (const [at, rows] of STEPS2) if (t >= at) s.transcript.push(...rows)
     return s
   }
   for (const [at, rows] of STEPS2) if (t >= at) s.transcript.push(...rows)
-  if (t < CMD_START) { s.cap = 'Claude shipped. Your neck got a patch too.'; return s }
-  if (t < CMD_RUN) { s.input = '/break'.slice(0, Math.floor((t - CMD_START) * 8)); s.caret = true; s.cap = 'Want one right now? Type /break'; return s }
+  if (t < CMD_START) { s.cap = 'Claude shipped. Your mind and senses got grounded too.'; return s }
+  if (t < CMD_RUN) { s.input = '/sitspot'.slice(0, Math.floor((t - CMD_START) * 8)); s.caret = true; s.cap = 'Want one right now? Type /sitspot'; return s }
   if (t < BREAK2[1]) {
-    s.transcript.push(...user('/break'))
-    s.scene = { id: 'squat', t: (t - BREAK2[0]) * 1000, press: t >= PRESS2 ? 'done' : null }
+    s.transcript.push(...user('/sitspot'))
+    s.scene = { id: 'wood', t: (t - BREAK2[0]) * 1000, press: t >= PRESS2 ? 'done' : null }
     s.cap = 'Want one right now? Type /break'
     return s
   }
