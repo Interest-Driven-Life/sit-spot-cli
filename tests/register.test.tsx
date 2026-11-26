@@ -166,7 +166,7 @@ test('a pending break is not replaced, and Skip restarts the wait', async ($, on
   }
 })
 
-test('the band names the move, what it does and what skipping it costs; Done clears it and the next move differs', async ($, on) => {
+test('the band names the practice and its benefit; Done clears it and the next move differs', async ($, on) => {
   const clock = engine(on)
   await $.session.start({ cwd: '/', surface: 'terminal', isInteractive: true })
   await longTurn($, clock, 't1')
@@ -179,7 +179,6 @@ test('the band names the move, what it does and what skipping it costs; Done cle
     const combined = texts.map(t => t.text).join(' ')
     expect(combined).toContain(activity.how)
     expect(combined).toContain(activity.does)
-    expect(combined).toContain(activity.skip)
     expect(combined).toContain("Sit. That's It. (sitspot.club)")
     await ui.unmount()
   }
@@ -357,7 +356,7 @@ test('after Done the animation stops', async ($, on) => {
   await band.unmount()
 })
 
-test('Done, Skip and In 5 min keep no record: nothing is written to the store', async ($, on) => {
+test('Done, Skip and Snooze 5m keep no record: nothing is written to the store', async ($, on) => {
   const { clock, writes } = engineWithStore(on, {})
   await $.session.start({ cwd: '/', surface: 'terminal', isInteractive: true })
   for (const key of ['done', 'skip', 'snooze']) {
@@ -370,7 +369,7 @@ test('Done, Skip and In 5 min keep no record: nothing is written to the store', 
   expect(writes).toEqual([])
 })
 
-test('In 5 min hides the break and brings the same one back 5 minutes later', async ($, on) => {
+test('Snooze 5m hides the break and brings the same one back 5 minutes later', async ($, on) => {
   const clock = engine(on)
   await $.session.start({ cwd: '/', surface: 'terminal', isInteractive: true })
   await clock.advance(45 * 60_000) // the first break waits one interval from the session start
@@ -379,7 +378,7 @@ test('In 5 min hides the break and brings the same one back 5 minutes later', as
   const first = await bandTitle($, 'terminal')
 
   const ui = await $.ui.mount({ ...BAND, surface: 'terminal' })
-  expect((await ui.find({ key: 'snooze' }))?.props.label).toBe('In 5 min')
+  expect((await ui.find({ key: 'snooze' }))?.props.label).toBe('Snooze 5m')
   await ui.press({ key: 'snooze' })
   await ui.unmount()
   expect(await bandTitle($, 'terminal')).toBe('engine')

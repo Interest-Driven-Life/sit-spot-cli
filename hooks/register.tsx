@@ -47,7 +47,7 @@ type Context = {
   state: ScheduleState
   /** The move shown last, so the next pick is a different one. */
   lastScene: SceneId | null
-  /** The break "In 5 min" put off; shown again when the schedule says so. */
+  /** The break "Snooze 5m" put off; shown again when the schedule says so. */
   snoozed: Activity | null
   random: () => number
   ticker: Timer | null
@@ -216,7 +216,7 @@ async function runCommand($: EngineInterface, ctx: Context, args: string): Promi
   if (arg !== '') return USAGE
 
   const pending = await read($, current)
-  if (pending !== null) return `A break is already on show: ${pending.title}. Press Done, In 5 min or Skip first.\n${SIGNOFF}`
+  if (pending !== null) return `A break is already on show: ${pending.title}. Press Done, Snooze 5m or Skip first.\n${SIGNOFF}`
 
   const activity = pickActivity(pool(ctx), ctx.lastScene, ctx.random)
   if (activity === null) return `Every move is turned off: turn one on (/sitspot set <move> on) to take a break.\n${SIGNOFF}`
@@ -385,13 +385,17 @@ export const register: Register = on => {
     const { Box, Button, Text } = $.ui.resolve(e)
 
     const words = (
-      <Box>
-        <Text bold>{activity.title}</Text>
-        <Text dimColor> {e.props.isWorking ? '(Claude is still working) ' : ''}{describe(activity)} </Text>
-        <Button key="done" label="Done" onPress={() => handled($, ctx, 'done')} />
-        <Button key="snooze" label="In 5 min" onPress={() => handled($, ctx, 'snoozed')} />
-        <Button key="skip" label="Skip" onPress={() => handled($, ctx, 'skipped')} />
-        <Text dimColor> {SIGNOFF}</Text>
+      <Box flexDirection="column" gap={1}>
+        <Box gap={1}>
+          <Text bold>{activity.title}</Text>
+          <Text dimColor> {e.props.isWorking ? '(Claude is still working) ' : ''}{describe(activity)} </Text>
+        </Box>
+        <Box gap={1} alignItems="center">
+          <Button key="done" label="Done" onPress={() => handled($, ctx, 'done')} />
+          <Button key="snooze" label="Snooze 5m" onPress={() => handled($, ctx, 'snoozed')} />
+          <Button key="skip" label="Skip" onPress={() => handled($, ctx, 'skipped')} />
+          <Text dimColor>  {SIGNOFF}</Text>
+        </Box>
       </Box>
     )
 

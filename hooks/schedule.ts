@@ -1,6 +1,6 @@
 import type { Settings } from './settings'
 
-/** How long "In 5 min" puts a break off. */
+/** How long "Snooze 5m" puts a break off. */
 export const SNOOZE_MS = 5 * 60_000
 
 export type ScheduleState = {
@@ -66,7 +66,7 @@ export function afterHandled(state: ScheduleState, now: number): ScheduleState {
   return { ...state, lastNudgeAt: now }
 }
 
-/** The state after the person pressed "In 5 min" at `now`. */
+/** The state after the person pressed "Snooze 5m" at `now`. */
 export function afterSnooze(state: ScheduleState, now: number): ScheduleState {
   return { ...state, lastNudgeAt: now, snoozedUntil: now + SNOOZE_MS }
 }

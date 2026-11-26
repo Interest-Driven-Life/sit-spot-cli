@@ -116,7 +116,7 @@ function band(a: (typeof ACTIVITIES)[number]): Cell[][] {
     [a.title, FG],
     [` (Claude is still working) ${describe(a)} `, DIM],
     ['[', DIM], ['Done', FG], [']', DIM], [' ', FG],
-    ['[', DIM], ['In 5 min', FG], [']', DIM], [' ', FG],
+    ['[', DIM], ['Snooze 5m', FG], [']', DIM], [' ', FG],
     ['[', DIM], ['Skip', FG], [']', DIM],
   ]
   const cells: Cell[] = []

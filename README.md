@@ -1,6 +1,6 @@
 # Sit Spot Break
 
-A Claude Code plugin that turns the time you spend waiting on Claude into mindful nature and sensory grounding micro-practices for Sit Spot Club. Every 45 minutes, the next time a turn runs longer than 15 seconds, a gentle sensory micro-break shows above the prompt: something for your eyes, ears, tactile grounding, breath, or daylight connection, acted out by a quiet pixel character. Press **Done**, **In 5 min** or **Skip**. It all happens in the terminal and runs locally: no network, no model calls, no tokens.
+A Claude Code plugin that turns the time you spend waiting on Claude into mindful nature and sensory grounding micro-practices for Sit Spot Club. Every 45 minutes, the next time a turn runs longer than 15 seconds, a gentle sensory micro-break shows above the prompt: something for your eyes, ears, tactile grounding, breath, or daylight connection, acted out by a quiet pixel character. Press **Done**, **Snooze 5m** or **Skip**. It all happens in the terminal and runs locally: no network, no model calls, no tokens.
 
 > **Sit. That's It. (sitspot.club)**
 
@@ -51,7 +51,7 @@ The plugin registers `/sitspot` (and keeps `/break` as an alias):
 | `/sitspot set <key> <value>` | Changes a setting, e.g. `/sitspot set waitSeconds 30` or `/sitspot set wood off`. |
 | `/sitspot reset [key]` | Puts one setting back to its default, or all of them with no key. |
 
-`/sitspot` runs at once, even while Claude is working. The mod's store holds only whether reminders are off and the settings you changed; Done, Skip and In 5 min keep no record.
+`/sitspot` runs at once, even while Claude is working. The mod's store holds only whether reminders are off and the settings you changed; Done, Skip and Snooze 5m keep no record.
 
 ## Settings
 
@@ -74,7 +74,7 @@ Turn off practices you don't want right now (`/sitspot set wood off`); with ever
 - `turn.start`: notes when Claude's main turn began, so a long turn can be spotted.
 - `turn.complete`: notes that the main turn ended and takes the scene off the spinner.
 - `ui.render` on `Spinner`: while a break is on show and Claude works, draws its scene above the spinner line and leaves the spinner as it is. Below 54 columns, or outside the terminal, it hands the spinner back unchanged.
-- `ui.render` on `AbovePrompt`: shows the break's words, gentle signoff, and Done, In 5 min and Skip buttons, with the scene above them while Claude is idle.
+- `ui.render` on `AbovePrompt`: shows the break's words, gentle signoff, and Done, Snooze 5m and Skip buttons, with the scene above them while Claude is idle.
 
 While a scene is on screen, a timer repaints it about 12 times a second; it stops as soon as the break is answered.
 

@@ -3,20 +3,22 @@ import { expect, test } from 'claude-code/testing'
 import { ACTIVITIES, describe } from '../hooks/activities'
 import type { Activity } from '../types'
 
-test('every break says what to do, what it does, and where skipping it leads', () => {
+test('every break says what to do (action) and what it does for you (benefit)', () => {
   for (const a of ACTIVITIES) {
     expect(a.title.length).toBeGreaterThan(0)
     expect(a.how.length).toBeGreaterThan(0)
     expect(a.does.length).toBeGreaterThan(0)
-    expect(a.skip.startsWith('Skip it and ')).toBe(true)
-    expect(describe(a)).toBe(`${a.how} ${a.does} ${a.skip}`)
+    expect(describe(a)).toBe(`${a.how} ${a.does}`)
   }
 })
 
-test('titles are unique, and every text is plain English ASCII', () => {
+test('titles are unique, and every text is plain English ASCII without negative framing', () => {
   expect(new Set(ACTIVITIES.map(a => a.title)).size).toBe(ACTIVITIES.length)
   for (const a of ACTIVITIES) {
-    for (const s of [a.title, a.how, a.does, a.skip]) expect(/^[ -~]+$/.test(s)).toBe(true)
+    for (const s of [a.title, a.how, a.does]) {
+      expect(/^[ -~]+$/.test(s)).toBe(true)
+      expect(s.toLowerCase()).not.toContain('skip it and')
+    }
   }
 })
 
