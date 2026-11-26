@@ -116,8 +116,8 @@ function band(a: (typeof ACTIVITIES)[number]): Cell[][] {
     [a.title, FG],
     [` (Claude is still working) ${describe(a)} `, DIM],
     ['[', DIM], ['Done', FG], [']', DIM], [' ', FG],
-    ['[', DIM], ['Snooze 5m', FG], [']', DIM], [' ', FG],
-    ['[', DIM], ['Skip', FG], [']', DIM],
+    ['[', DIM], ['Next', FG], [']', DIM], [' ', FG],
+    ['[', DIM], ['Snooze 5m', FG], [']', DIM],
   ]
   const cells: Cell[] = []
   for (const [str, c] of parts) for (const ch of str) cells.push({ ch, fg: c })

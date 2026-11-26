@@ -130,7 +130,7 @@ test('a subagent ending does not end the main turn', async ($, on) => {
   expect(isBreak(await bandTitle($, 'terminal'))).toBe(true)
 })
 
-test('a pending break is not replaced, and Skip restarts the wait', async ($, on) => {
+test('a pending break is not replaced, and Done restarts the wait', async ($, on) => {
   const clock = engine(on)
   await $.session.start({ cwd: '/', surface: 'terminal', isInteractive: true })
   await longTurn($, clock, 't1')
@@ -141,9 +141,9 @@ test('a pending break is not replaced, and Skip restarts the wait', async ($, on
   await longTurn($, clock, 't2')
   expect(await bandTitle($, 'terminal')).toBe(first)
 
-  // Skip it: cleared, and the wait starts over from now.
+  // Done clears it, and the wait starts over from now.
   const ui = await $.ui.mount({ ...BAND, surface: 'terminal' })
-  await ui.press({ key: 'skip' })
+  await ui.press({ key: 'done' })
   await ui.unmount()
   expect(await bandTitle($, 'terminal')).toBe('engine')
 
@@ -306,7 +306,7 @@ test('no scene, the stock spinner: narrow terminal, desktop, or no break', async
   await desktop.unmount()
 })
 
-test('while Claude is idle, the scene plays in the band, and Done and Skip still work', async ($, on) => {
+test('while Claude is idle, the scene plays in the band, and Done, Next and Snooze 5m are shown', async ($, on) => {
   const clock = engine(on)
   await $.session.start({ cwd: '/', surface: 'terminal', isInteractive: true })
   await longTurn($, clock, 't1')
@@ -317,7 +317,8 @@ test('while Claude is idle, the scene plays in the band, and Done and Skip still
   expect(raster?.props.columns).toBe(80)
   expect(raster?.props.rows).toBe(ROWS)
   expect(await terminal.find({ key: 'done' })).not.toBe(undefined)
-  expect(await terminal.find({ key: 'skip' })).not.toBe(undefined)
+  expect(await terminal.find({ key: 'next' })).not.toBe(undefined)
+  expect(await terminal.find({ key: 'snooze' })).not.toBe(undefined)
   await terminal.unmount()
 
   const desktop = await $.ui.mount({ ...idle, surface: 'desktop' })
@@ -356,17 +357,43 @@ test('after Done the animation stops', async ($, on) => {
   await band.unmount()
 })
 
-test('Done, Skip and Snooze 5m keep no record: nothing is written to the store', async ($, on) => {
+test('Done, Next and Snooze 5m keep no record: nothing is written to the store', async ($, on) => {
   const { clock, writes } = engineWithStore(on, {})
   await $.session.start({ cwd: '/', surface: 'terminal', isInteractive: true })
-  for (const key of ['done', 'skip', 'snooze']) {
+  for (const key of ['done', 'snooze', 'next']) {
     await longTurn($, clock, `t-${key}`)
     const ui = await $.ui.mount({ ...BAND, surface: 'terminal' })
     expect(isBreak((await ui.find({ type: 'Text' }))?.text)).toBe(true)
     await ui.press({ key })
+    if (key === 'next') await ui.press({ key: 'done' })
     await ui.unmount()
   }
   expect(writes).toEqual([])
+})
+
+test('Next rotates to a different practice while keeping the break active', async ($, on) => {
+  const clock = engine(on)
+  await $.session.start({ cwd: '/', surface: 'terminal', isInteractive: true })
+  await longTurn($, clock, 't1')
+
+  const ui = await $.ui.mount({ ...BAND, surface: 'terminal' })
+  const first = (await ui.find({ type: 'Text' }))?.text
+  expect(isBreak(first)).toBe(true)
+  expect((await ui.find({ key: 'next' }))?.props.label).toBe('Next')
+
+  await ui.press({ key: 'next' })
+  const second = (await ui.find({ type: 'Text' }))?.text
+  expect(isBreak(second)).toBe(true)
+  expect(second).not.toBe(first)
+
+  await ui.press({ key: 'next' })
+  const third = (await ui.find({ type: 'Text' }))?.text
+  expect(isBreak(third)).toBe(true)
+  expect(third).not.toBe(second)
+
+  await ui.press({ key: 'done' })
+  await ui.unmount()
+  expect(await bandTitle($, 'terminal')).toBe('engine')
 })
 
 test('Snooze 5m hides the break and brings the same one back 5 minutes later', async ($, on) => {
@@ -399,7 +426,7 @@ test(
       await longTurn($, clock, `t${i}`)
       expect(await bandTitle($, 'terminal')).toBe('Touching wood')
       const ui = await $.ui.mount({ ...BAND, surface: 'terminal' })
-      await ui.press({ key: 'skip' })
+      await ui.press({ key: 'done' })
       await ui.unmount()
     }
   },
@@ -535,7 +562,7 @@ test('/break off stops reminders, /break still works, /break on brings them back
   await runBreak($)
   expect(isBreak(await bandTitle($, 'terminal'))).toBe(true)
   const ui = await $.ui.mount({ ...BAND, surface: 'terminal' })
-  await ui.press({ key: 'skip' })
+  await ui.press({ key: 'done' })
   await ui.unmount()
   await endTurn($, 't1')
 

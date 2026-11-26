@@ -6,7 +6,7 @@ export const SNOOZE_MS = 5 * 60_000
 export type ScheduleState = {
   /** When the session started: the first break's interval counts from here. */
   startedAt: number
-  /** When the last break was shown or handled (Done/Skip); null before any. */
+  /** When the last break was shown or handled (Done); null before any. */
   lastNudgeAt: number | null
   /** The main-loop turn in progress, or null when Claude is idle. */
   turn: { id: string; since: number; nudged: boolean } | null
@@ -26,7 +26,7 @@ export function initialState(now: number): ScheduleState {
  * has passed since the last break, or since the session started for the
  * first one. So there is one break per interval at most, and none while
  * Claude is idle. Never while
- * a break is still showing: the person has not pressed Done or Skip yet, and
+ * a break is still showing: the person has not pressed Done or Snooze 5m yet, and
  * replacing it would lose it.
  */
 export function decide(
@@ -58,7 +58,7 @@ export function afterNudge(state: ScheduleState, now: number): ScheduleState {
 }
 
 /**
- * The state after the person pressed Done or Skip. The interval restarts from
+ * The state after the person pressed Done. The interval restarts from
  * here, so a break left open for longer than the interval is not followed by
  * another one on the next long turn.
  */

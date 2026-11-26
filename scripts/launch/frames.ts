@@ -38,7 +38,7 @@ function bandCells(id: SceneId, working: boolean, press: 'done' | null): Row[] {
   const add = (s: string, c: number, b = BG) => { for (const ch of s) cells.push([ch, c, b]) }
   add(a.title, FG); add(` ${working ? '(Claude is still working) ' : ''}${describe(a)} `, DIM)
   const btn = (l: string, on: boolean) => on ? add(` ${l} `, 0x1b1b1e, BODY) : (add('[', DIM), add(l, FG), add(']', DIM))
-  btn('Done', press === 'done'); add(' ', FG); btn('Snooze 5m', false); add(' ', FG); btn('Skip', false)
+  btn('Done', press === 'done'); add(' ', FG); btn('Next', false); add(' ', FG); btn('Snooze 5m', false)
   return wrap(cells, COLS)
 }
 
