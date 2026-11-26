@@ -28,15 +28,15 @@ test('every enabled move gets picked', () => {
 })
 
 test('picks only from the pool, and the last move is left out of it', () => {
-  const pool = ACTIVITIES.filter(a => a.scene === 'squat' || a.scene === 'walk')
-  expect(pickActivity(pool, 'squat', seq(0))!.scene).toBe('walk')
-  expect(pickActivity(pool, 'walk', seq(0.99))!.scene).toBe('squat')
+  const pool = ACTIVITIES.filter(a => a.scene === 'wood' || a.scene === 'eyes')
+  expect(pickActivity(pool, 'wood', seq(0))!.scene).toBe('eyes')
+  expect(pickActivity(pool, 'eyes', seq(0.99))!.scene).toBe('wood')
   // random() can return values close to 1; the index stays in range.
   expect(pickActivity(pool, null, () => 0.9999999)!.scene).toBe(pool.at(-1)!.scene)
 })
 
 test('one move on: it repeats; none on: nothing', () => {
-  const only = ACTIVITIES.filter(a => a.scene === 'water')
-  expect(pickActivity(only, 'water', Math.random)!.scene).toBe('water')
+  const only = ACTIVITIES.filter(a => a.scene === 'sound')
+  expect(pickActivity(only, 'sound', Math.random)!.scene).toBe('sound')
   expect(pickActivity([], null, Math.random)).toBe(null)
 })

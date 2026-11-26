@@ -11,6 +11,12 @@ export const PH = ROWS * 2
 /** The terminal's own colour, as a Raster cell takes it: transparent here. */
 export const DEFAULT = 0x01000000
 
+// Sit Spot Club brand tokens
+export const FOREST_GREEN = 0x2d5016 // #2D5016
+export const WARM_GOLD = 0xc8a96e    // #C8A96E
+export const SLATE = 0x475569        // Slate
+export const OFF_WHITE = 0xf5f0e8    // #F5F0E8
+
 export type P = readonly [number, number]
 
 /** Words on top of the pixels: `ch` in colour, `plain` instead when there is no colour. */

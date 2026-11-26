@@ -77,22 +77,12 @@ function rasterize(screen: Screen, pad = 1): { w: number; h: number; px: Uint32A
 
 /** Moments that show each scene's poses (ms after the break was shown). */
 const MOMENTS: Record<SceneId, number[]> = {
-  stand: [500, 1700, 2200, 2700],
-  water: [500, 2200, 3500, 9500],
-  walk: [1000, 2500, 4000, 5500],
   eyes: [500, 10_500, 19_500, 21_000],
+  sound: [500, 5000, 10_000, 15_000],
+  wood: [500, 5000, 10_000, 15_000],
   breathe: [500, 3000, 6000, 10_500],
-  neck: [500, 1700, 3500, 4800],
-  shoulders: [500, 1700, 4500, 6000],
-  thoracic: [500, 2000, 4500, 6500],
-  twist: [1200, 6000, 20_000, 31_000],
-  wrists: [4000, 14_000, 24_000, 34_000],
-  squat: [300, 1200, 2300, 19_000],
-  lunge: [300, 1000, 2700, 3500],
-  glutes: [300, 1200, 2300, 21_000],
-  hamstring: [400, 5000, 7000, 26_000],
-  calf: [400, 5000, 7000, 26_000],
-  hipflexor: [400, 5000, 7000, 26_000],
+  outside: [500, 20_000, 40_000, 60_000],
+  weather: [500, 7000, 14_000, 20_000],
 }
 
 function sheet(ids: SceneId[]): Screen {
@@ -126,8 +116,8 @@ function band(a: (typeof ACTIVITIES)[number]): Cell[][] {
     [a.title, FG],
     [` (Claude is still working) ${describe(a)} `, DIM],
     ['[', DIM], ['Done', FG], [']', DIM], [' ', FG],
-    ['[', DIM], ['In 5 min', FG], [']', DIM], [' ', FG],
-    ['[', DIM], ['Skip', FG], [']', DIM],
+    ['[', DIM], ['Next', FG], [']', DIM], [' ', FG],
+    ['[', DIM], ['Snooze 5m', FG], [']', DIM],
   ]
   const cells: Cell[] = []
   for (const [str, c] of parts) for (const ch of str) cells.push({ ch, fg: c })
@@ -163,22 +153,12 @@ function terminal(i: number, t: number, elapsed: number): Screen {
 
 /** Each break's stretch of the GIF: where its clock starts and how long it plays. */
 const CLIPS: Record<SceneId, [number, number]> = {
-  stand: [0, 3600],
-  water: [0, 3000],
-  walk: [0, 2500],
   eyes: [17_500, 3000],
+  sound: [0, 3000],
+  wood: [0, 3000],
   breathe: [1000, 3000],
-  neck: [0, 3000],
-  shoulders: [0, 2500],
-  thoracic: [0, 3000],
-  twist: [13_500, 3000],
-  wrists: [8500, 3000],
-  squat: [0, 3000],
-  lunge: [0, 3000],
-  glutes: [0, 3000],
-  hamstring: [18_500, 3000],
-  calf: [0, 2500],
-  hipflexor: [18_500, 3000],
+  outside: [0, 3000],
+  weather: [0, 3000],
 }
 const FRAME_MS = 100
 

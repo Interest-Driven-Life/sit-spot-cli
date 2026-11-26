@@ -18,18 +18,22 @@ import {
 } from './settings'
 import type { Settings } from './settings'
 
-const current = atom({ plugin: '30yr-uptime', key: 'current' } as const, null)
+const current = atom({ plugin: 'sit-spot-break', key: 'current' } as const, null)
 
 const TICK_MS = 5000
 const FRAME_MS = 83 // ~12 frames a second
 const SCENE_KEY = 'scene'
-/** The `$.store` key `/break off` sets: reminders stay off across sessions. */
+/** The `$.store` key `/sitspot off` sets: reminders stay off across sessions. */
 const PAUSED_KEY = 'paused'
-const COMMAND = 'break'
+const COMMAND = 'sitspot'
+const ALIAS_COMMAND = 'break'
+const SIGNOFF = "Sit. That's It. (sitspot.club)"
+
 const USAGE = [
-  'Usage: /break (a break now), /break off (pause reminders), /break on (resume them),',
-  '/break config (the settings), /break moves (each move, on or off),',
-  '/break set <key> <value> (e.g. /break set waitSeconds 30, /break set squat off), /break reset [key].',
+  'Usage: /sitspot (a break now), /sitspot off (pause reminders), /sitspot on (resume them),',
+  '/sitspot config (the settings), /sitspot moves (each micro-practice, on or off),',
+  '/sitspot set <key> <value> (e.g. /sitspot set waitSeconds 30, /sitspot set wood off), /sitspot reset [key].',
+  SIGNOFF,
 ].join('\n')
 
 /** A drawn scene the frame timer repaints in place. */
@@ -38,12 +42,12 @@ type Mount = { requestId: string; width: number; site: 'spinner' | 'band'; last:
 /** What one loaded module keeps between hooks; a reload starts it over. */
 type Context = {
   settings: Settings
-  /** What `/break set` changed, as kept in `$.store`; the rest is the defaults. */
+  /** What `/sitspot set` changed, as kept in `$.store`; the rest is the defaults. */
   stored: Record<string, unknown>
   state: ScheduleState
   /** The move shown last, so the next pick is a different one. */
   lastScene: SceneId | null
-  /** The break "In 5 min" put off; shown again when the schedule says so. */
+  /** The break "Snooze 5m" put off; shown again when the schedule says so. */
   snoozed: Activity | null
   random: () => number
   ticker: Timer | null
@@ -54,7 +58,7 @@ type Context = {
   mounts: Map<string, Mount>
   /** The break on show, as last read: the frame timer does not read state. */
   showing: Activity | null
-  /** `/break off`: no reminders until `/break on`, kept in `$.store`. */
+  /** `/sitspot off`: no reminders until `/sitspot on`, kept in `$.store`. */
   paused: boolean
   /** NO_COLOR is set: scenes are drawn in the terminal's own colour, lit blocks only. */
   plain: boolean
@@ -105,7 +109,7 @@ async function show($: EngineInterface, ctx: Context, activity: Activity, now: n
   ctx.showing = activity
   ctx.shownAt = now
   // The band above the prompt is the one place a break's words and buttons
-  // show: it stays until Done or Skip, while a toast would vanish.
+  // show: it stays until Done or Snooze 5m, while a toast would vanish.
   await update($, current, () => activity)
 }
 
@@ -121,14 +125,14 @@ async function tick($: EngineInterface, ctx: Context) {
     reason === 'snooze' && ctx.snoozed !== null ? ctx.snoozed : pickActivity(pool(ctx), ctx.lastScene, ctx.random)
   ctx.snoozed = null
   if (activity === null) {
-    // Every move is off: nothing to suggest.
+    // Every practice is off: nothing to suggest.
     ctx.state = afterNudge(ctx.state, now)
     return
   }
   await show($, ctx, activity, now)
 }
 
-/** Reads the settings `/break set` kept. */
+/** Reads the settings `/sitspot set` kept. */
 async function loadSettings($: EngineInterface, ctx: Context) {
   ctx.stored = toRaw(await $.store.get(SETTINGS_KEY))
   ctx.settings = readSettings(ctx.stored)
@@ -143,7 +147,7 @@ async function saveSettings($: EngineInterface, ctx: Context, stored: Record<str
   ctx.settings = readSettings(stored)
 }
 
-/** `/break config`, `moves`, `set` and `reset`; null when `words` is none of them. */
+/** `/sitspot config`, `moves`, `set` and `reset`; null when `words` is none of them. */
 async function runSettings($: EngineInterface, ctx: Context, words: string[]): Promise<string | null> {
   const [verb = '', key = '', ...rest] = words
   switch (verb.toLowerCase()) {
@@ -151,13 +155,14 @@ async function runSettings($: EngineInterface, ctx: Context, words: string[]): P
     case 'settings':
       return words.length === 1 ? describeSettings(ctx.settings) : USAGE
     case 'moves':
+    case 'practices':
       return words.length === 1 ? describeMoves(ctx.settings) : USAGE
     case 'set': {
       const found = findKey(key)
       if (found === undefined || rest.length !== 1) {
         return found === undefined && key !== ''
-          ? `No setting called ${key}. /break config and /break moves list them.`
-          : 'Usage: /break set <key> <value>, e.g. /break set waitSeconds 30 or /break set squat off.'
+          ? `No setting called ${key}. /sitspot config and /sitspot moves list them.`
+          : 'Usage: /sitspot set <key> <value>, e.g. /sitspot set waitSeconds 30 or /sitspot set wood off.'
       }
       const parsed = parseSetting(found, rest[0]!)
       if ('error' in parsed) return parsed.error
@@ -170,7 +175,7 @@ async function runSettings($: EngineInterface, ctx: Context, words: string[]): P
         return 'Every setting is back to its default.'
       }
       const found = findKey(key)
-      if (found === undefined || rest.length !== 0) return `No setting called ${key}. /break config and /break moves list them.`
+      if (found === undefined || rest.length !== 0) return `No setting called ${key}. /sitspot config and /sitspot moves list them.`
       const { [found]: _, ...others } = ctx.stored
       await saveSettings($, ctx, others)
       return `${found} is back to its default.`
@@ -180,7 +185,7 @@ async function runSettings($: EngineInterface, ctx: Context, words: string[]): P
   }
 }
 
-/** `/break`, `/break off`, `/break on` and the settings: the command's answer. */
+/** `/sitspot`, `/sitspot off`, `/sitspot on` and the settings: the command's answer. */
 async function runCommand($: EngineInterface, ctx: Context, args: string): Promise<string> {
   const words = args.trim().split(/\s+/).filter(w => w !== '')
   const arg = words.length === 1 ? words[0]!.toLowerCase() : words.length === 0 ? '' : '-'
@@ -195,7 +200,7 @@ async function runCommand($: EngineInterface, ctx: Context, args: string): Promi
     ctx.snoozed = null
     ctx.state = { ...ctx.state, snoozedUntil: null }
     await $.store.set(PAUSED_KEY, true)
-    return 'Break reminders are off, in this and later sessions. /break still starts one; /break on turns them back on.'
+    return `Break reminders are off, in this and later sessions. /sitspot still starts one; /sitspot on turns them back on.\n${SIGNOFF}`
   }
 
   if (arg === 'on') {
@@ -205,22 +210,29 @@ async function runCommand($: EngineInterface, ctx: Context, args: string): Promi
     // The wait starts over from now, so turning them on is not answered by a
     // reminder the very next tick.
     ctx.state = afterHandled(ctx.state, now)
-    return was ? 'Break reminders are back on.' : 'Break reminders are already on.'
+    return was ? `Break reminders are back on.\n${SIGNOFF}` : `Break reminders are already on.\n${SIGNOFF}`
   }
 
   if (arg !== '') return USAGE
 
   const pending = await read($, current)
-  if (pending !== null) return `A break is already on show: ${pending.title}. Press Done, In 5 min or Skip first.`
+  if (pending !== null) return `A break is already on show: ${pending.title}. Press Done, Next or Snooze 5m first.\n${SIGNOFF}`
 
   const activity = pickActivity(pool(ctx), ctx.lastScene, ctx.random)
-  if (activity === null) return 'Every move is turned off: turn one on (/break set <move> on) to take a break.'
+  if (activity === null) return `Every move is turned off: turn one on (/sitspot set <move> on) to take a break.\n${SIGNOFF}`
   ctx.snoozed = null
   await show($, ctx, activity, now)
-  return `Break: ${activity.title}.`
+  return `Break: ${activity.title}.\n${SIGNOFF}`
 }
 
-type Answer = 'done' | 'skipped' | 'snoozed'
+type Answer = 'done' | 'snoozed'
+
+async function nextBreak($: EngineInterface, ctx: Context) {
+  const activity = pickActivity(pool(ctx), ctx.lastScene, ctx.random)
+  if (activity === null) return
+  const now = await $.clock.now()
+  await show($, ctx, activity, now)
+}
 
 async function handled($: EngineInterface, ctx: Context, answer: Answer) {
   const now = await $.clock.now()
@@ -261,8 +273,6 @@ async function sceneFor(
   return cells
 }
 
-// No `userConfig`: an option there counts as "not yet set" at install even
-// with a default, so the settings live in `$.store` and `/break set` instead.
 export const register: Register = on => {
   const ctx: Context = {
     settings: readSettings({}),
@@ -281,8 +291,6 @@ export const register: Register = on => {
   }
 
   on('session.start', async ($, e, next) => {
-    // session.start can run more than once in a process (e.g. /clear); one
-    // ticker per module, or each run would add another and nudge faster.
     ctx.ticker?.cancel()
     ctx.ticker = null
     stopFrames(ctx)
@@ -304,20 +312,34 @@ export const register: Register = on => {
     try {
       await $.command.register({
         name: COMMAND,
-        description: 'Take a movement break now; off/on pauses the reminders; config, moves, set and reset change the settings',
+        description: 'Take a Sit Spot break now; off/on pauses reminders; config, moves, set and reset change settings',
         argumentHint: '[off|on|config|moves|set <key> <value>|reset [key]]',
         immediate: true,
       })
     } catch {
-      // A host with no slash commands: the reminders still run without it.
+      // A host with no slash commands: reminders still run without it.
+    }
+
+    try {
+      await $.command.register({
+        name: ALIAS_COMMAND,
+        description: 'Take a Sit Spot break now; off/on pauses reminders; config, moves, set and reset change settings',
+        argumentHint: '[off|on|config|moves|set <key> <value>|reset [key]]',
+        immediate: true,
+      })
+    } catch {
+      // A host with no slash commands: reminders still run without it.
     }
 
     return next(e)
   })
 
   on('command.run', { command: COMMAND }, async ($, e) => ({ text: await runCommand($, ctx, e.args ?? '') })).catch(
-    // A store write that failed (or ran out of time): say so, not a silent no-op.
-    () => ({ text: 'Could not run /break just now; nothing was changed. Try again.' }),
+    () => ({ text: `Could not run /sitspot just now; nothing was changed. Try again.\n${SIGNOFF}` }),
+  )
+
+  on('command.run', { command: ALIAS_COMMAND }, async ($, e) => ({ text: await runCommand($, ctx, e.args ?? '') })).catch(
+    () => ({ text: `Could not run /break just now; nothing was changed. Try again.\n${SIGNOFF}` }),
   )
 
   on('turn.start', async ($, e, next) => {
@@ -329,8 +351,6 @@ export const register: Register = on => {
   })
 
   on('turn.complete', async ($, e, next) => {
-    // A subagent's turn ends inside the main turn; only the main turn's own
-    // end means Claude stopped working.
     if (e.agentId === undefined) {
       ctx.state = turnEnded(ctx.state, e.turnId)
       for (const [id, m] of ctx.mounts) if (m.site === 'spinner') ctx.mounts.delete(id)
@@ -339,8 +359,7 @@ export const register: Register = on => {
     return next(e)
   })
 
-  // While Claude works, the break's scene plays above the spinner line, which
-  // stays as the engine draws it. Narrow, or not a terminal: the stock spinner.
+  // While Claude works, the break's scene plays above the spinner line
   on('ui.render', { component: 'Spinner' }, async ($, e, next) => {
     const activity = await read($, current)
     const width = sceneWidth((e.viewport?.columns ?? 0) - EDGE)
@@ -373,12 +392,17 @@ export const register: Register = on => {
     const { Box, Button, Text } = $.ui.resolve(e)
 
     const words = (
-      <Box>
-        <Text bold>{activity.title}</Text>
-        <Text dimColor> {e.props.isWorking ? '(Claude is still working) ' : ''}{describe(activity)} </Text>
-        <Button key="done" label="Done" onPress={() => handled($, ctx, 'done')} />
-        <Button key="snooze" label="In 5 min" onPress={() => handled($, ctx, 'snoozed')} />
-        <Button key="skip" label="Skip" onPress={() => handled($, ctx, 'skipped')} />
+      <Box flexDirection="column" gap={1}>
+        <Box gap={1}>
+          <Text bold>{activity.title}</Text>
+          <Text dimColor> {e.props.isWorking ? '(Claude is still working) ' : ''}{describe(activity)} </Text>
+        </Box>
+        <Box gap={1} alignItems="center">
+          <Button key="done" label="Done" onPress={() => handled($, ctx, 'done')} />
+          <Button key="next" label="Next" onPress={() => nextBreak($, ctx)} />
+          <Button key="snooze" label="Snooze 5m" onPress={() => handled($, ctx, 'snoozed')} />
+          <Text dimColor>  {SIGNOFF}</Text>
+        </Box>
       </Box>
     )
 

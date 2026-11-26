@@ -1,0 +1,21 @@
+{
+  "name": "sit-spot-break",
+  "version": "0.1.0",
+  "description": "Mindful nature and sensory grounding breaks for Sit Spot Club while waiting on Claude.",
+  "scripts": {
+    "test": "claude plugin test ."
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Interest-Driven-Life/sit-spot-cli.git"
+  },
+  "keywords": [
+    "claude-code",
+    "sit-spot",
+    "mindfulness",
+    "grounding",
+    "nature"
+  ],
+  "author": "Sit Spot Club",
+  "license": "MIT"
+}

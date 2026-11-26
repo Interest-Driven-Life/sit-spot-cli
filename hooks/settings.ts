@@ -13,11 +13,11 @@ export type Settings = {
   waitMs: number
   /** The shortest time between two breaks; 0 means every long turn gets one. */
   intervalMs: number
-  /** The moves a break may suggest, each turned on or off with /break set. */
+  /** The practices a break may suggest, each turned on or off with /sitspot set or /break set. */
   enabled: ReadonlySet<SceneId>
 }
 
-/** Each move's setting is named after its scene. */
+/** Each practice's setting is named after its scene. */
 export const MOVES: readonly SceneId[] = SCENE_IDS
 
 /**
@@ -60,7 +60,7 @@ export function readIntervalMinutes(value: unknown): number {
 }
 
 /**
- * A move's on/off option. Only an explicit "off" (`false`, or the strings
+ * A practice's on/off option. Only an explicit "off" (`false`, or the strings
  * `false`, `off`, `no`, `0`) turns it off: unset or anything unreadable keeps
  * the move on, so a bad value never silently removes breaks.
  */
@@ -107,7 +107,7 @@ const ON = ['on', 'true', 'yes', '1']
 const OFF = ['off', 'false', 'no', '0']
 
 /**
- * The value `/break set <key> <value>` stores, already in range, or why it is
+ * The value `/sitspot set <key> <value>` stores, already in range, or why it is
  * refused. The readers above stay the judges: a value is only accepted when
  * they read it as given (after clamping), never silently as the default.
  */
@@ -132,13 +132,13 @@ export function parseSetting(key: SettingKey, typed: string): { value: number | 
 
 const TITLES = new Map(ACTIVITIES.map(a => [a.scene, a.title]))
 
-/** `/break moves`: every move, its key and whether it is on. */
+/** `/sitspot moves`: every practice, its key and whether it is on. */
 export function describeMoves(settings: Settings): string {
   const rows = MOVES.map(m => `${settings.enabled.has(m) ? 'on ' : 'off'}  ${m} (${TITLES.get(m) ?? m})`)
-  return ['Moves (/break set <key> on|off):', ...rows].join('\n')
+  return ['Practices (/sitspot set <key> on|off):', ...rows, '', "Sit. That's It. (sitspot.club)"].join('\n')
 }
 
-/** `/break config`: every setting as it applies now. */
+/** `/sitspot config`: every setting as it applies now. */
 export function describeSettings(settings: Settings): string {
   const wait = settings.waitMs / 1000
   const interval = settings.intervalMs / 60_000
@@ -146,8 +146,10 @@ export function describeSettings(settings: Settings): string {
     'Settings:',
     `waitSeconds      ${wait}${wait === DEFAULT_WAIT_SECONDS ? ' (default)' : ''}`,
     `intervalMinutes  ${interval === 0 ? '0 (every long turn)' : interval}${interval === DEFAULT_INTERVAL_MINUTES ? ' (default)' : ''}`,
-    `moves            ${settings.enabled.size} of ${MOVES.length} on (/break moves lists them)`,
+    `moves            ${settings.enabled.size} of ${MOVES.length} on (/sitspot moves lists them)`,
     '',
-    'Change one: /break set waitSeconds 30, /break set squat off. Undo: /break reset [key].',
+    'Change one: /sitspot set waitSeconds 30, /sitspot set wood off. Undo: /sitspot reset [key].',
+    '',
+    "Sit. That's It. (sitspot.club)",
   ].join('\n')
 }
