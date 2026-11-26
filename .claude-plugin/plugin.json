@@ -1,6 +1,6 @@
 {
   "name": "sit-spot-break",
-  "displayName": "Sit Spot Break",
+  "displayName": "Sit Spot Break for Terminal",
   "version": "0.1.0",
   "license": "MIT",
   "description": "Mindful nature and sensory grounding breaks for Sit Spot Club while waiting on Claude.",

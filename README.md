@@ -1,4 +1,4 @@
-# Sit Spot Break
+# Sit Spot Break for Terminal
 
 A Claude Code plugin that turns the time you spend waiting on Claude into mindful nature and sensory grounding micro-practices for Sit Spot Club. Every 45 minutes, the next time a turn runs longer than 15 seconds, a gentle sensory micro-break shows above the prompt: something for your eyes, ears, tactile grounding, breath, or daylight connection, acted out by a quiet pixel character. Press **Done**, **Next** or **Snooze 5m**. It all happens in the terminal and runs locally: no network, no model calls, no tokens.
 
